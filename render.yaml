@@ -1,0 +1,40 @@
+# render.yaml
+services:
+  - type: web
+    name: chatwoot-web
+    env: ruby
+    buildCommand: "./bin/docker-entrypoint.sh"
+    startCommand: "bundle exec rails s -p 3000 -b 0.0.0.0"
+    envVars:
+      - key: DATABASE_URL
+        fromService:
+          name: chatwoot-db
+          type: pserv
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: chatwoot-redis
+          type: redis
+          property: connectionString
+  - type: worker
+    name: chatwoot-worker
+    env: ruby
+    buildCommand: "./bin/docker-entrypoint.sh"
+    startCommand: "bundle exec sidekiq"
+    envVars:
+      - key: DATABASE_URL
+        fromService:
+          name: chatwoot-db
+          type: pserv
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: chatwoot-redis
+          type: redis
+          property: connectionString
+  - type: redis
+    name: chatwoot-redis
+  - type: pserv
+    name: chatwoot-db
+    env: postgres
+    plan: starter
